@@ -1,0 +1,504 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="LineUp — draw precision paths, earn coins, and climb the leaderboard. Support, privacy policy, and player guide." />
+  <title>LineUp · Support &amp; Guide</title>
+
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🎯</text></svg>" />
+
+  <style>
+    /* ── Variables ── */
+    :root {
+      --bg:       #0f3460;
+      --surface:  #16213e;
+      --accent:   #e94560;
+      --accent2:  #533483;
+      --text:     #f0f0f0;
+      --muted:    rgba(255,255,255,0.55);
+      --card-bg:  rgba(255,255,255,0.06);
+      --radius:   14px;
+    }
+
+    /* ── Reset ── */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      background: linear-gradient(135deg, var(--bg) 0%, var(--surface) 55%, var(--accent2) 100%);
+      min-height: 100vh;
+      color: var(--text);
+      line-height: 1.6;
+    }
+
+    /* ── Nav ── */
+    nav {
+      position: sticky; top: 0; z-index: 100;
+      background: rgba(15,52,96,0.90);
+      backdrop-filter: blur(14px);
+      padding: 0 1.5rem;
+      display: flex; align-items: center; gap: 1rem;
+      height: 56px;
+      border-bottom: 1px solid rgba(255,255,255,0.08);
+    }
+    .nav-brand { font-weight: 800; font-size: 1.15rem; color: var(--accent); text-decoration: none; letter-spacing: .02em; }
+    .nav-links { margin-left: auto; display: flex; gap: 1.4rem; }
+    .nav-links a { color: var(--muted); text-decoration: none; font-size: .88rem; transition: color .2s; }
+    .nav-links a:hover { color: var(--text); }
+
+    /* ── Hero ── */
+    .hero {
+      text-align: center;
+      padding: 5rem 1.5rem 3.5rem;
+    }
+    .hero-icon { font-size: 4.5rem; display: block; margin-bottom: 1rem; }
+    .hero h1 {
+      font-size: clamp(2.2rem, 5vw, 3.4rem);
+      font-weight: 900;
+      letter-spacing: -0.02em;
+      line-height: 1.15;
+    }
+    .hero h1 span { color: var(--accent); }
+    .hero p {
+      margin-top: .9rem;
+      font-size: 1.05rem;
+      color: var(--muted);
+      max-width: 540px;
+      margin-inline: auto;
+    }
+    .hero-badges { margin-top: 1.6rem; display: flex; justify-content: center; gap: .8rem; flex-wrap: wrap; }
+    .badge {
+      background: var(--card-bg);
+      border: 1px solid rgba(255,255,255,0.12);
+      padding: .35rem .9rem;
+      border-radius: 999px;
+      font-size: .82rem;
+      color: var(--muted);
+    }
+
+    /* ── Sections ── */
+    section {
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 3rem 1.5rem;
+    }
+    section + section { border-top: 1px solid rgba(255,255,255,0.07); }
+    h2 {
+      font-size: 1.55rem;
+      font-weight: 800;
+      margin-bottom: 1.2rem;
+      display: flex; align-items: center; gap: .5rem;
+    }
+    h2 .emoji { font-size: 1.4rem; }
+    h3 { font-size: 1.05rem; font-weight: 700; margin: 1.4rem 0 .5rem; color: var(--accent); }
+
+    /* ── Cards grid ── */
+    .cards {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+      gap: 1rem;
+    }
+    .card {
+      background: var(--card-bg);
+      border: 1px solid rgba(255,255,255,0.09);
+      border-radius: var(--radius);
+      padding: 1.25rem 1.1rem;
+    }
+    .card-icon { font-size: 1.8rem; margin-bottom: .5rem; }
+    .card h3 { margin: 0 0 .4rem; font-size: .98rem; color: var(--text); }
+    .card p  { font-size: .85rem; color: var(--muted); margin: 0; }
+
+    /* ── Account cards ── */
+    .account-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+      gap: 1rem;
+      margin-top: 1rem;
+    }
+    .account-card {
+      background: var(--card-bg);
+      border: 1px solid rgba(255,255,255,0.09);
+      border-radius: var(--radius);
+      padding: 1.4rem 1.2rem;
+    }
+    .account-card .ac-icon { font-size: 2rem; margin-bottom: .6rem; }
+    .account-card h3 { margin: 0 0 .5rem; font-size: 1rem; color: var(--text); }
+    .account-card p { font-size: .87rem; color: var(--muted); }
+    .account-card.danger { border-color: rgba(233,69,96,0.4); background: rgba(233,69,96,0.08); }
+    .account-card.danger h3 { color: var(--accent); }
+    .account-card.warn { border-color: rgba(255,193,7,0.35); background: rgba(255,193,7,0.06); }
+    .account-card.warn h3 { color: #ffc107; }
+
+    /* ── Steps ── */
+    .steps { list-style: none; counter-reset: step; }
+    .steps li {
+      counter-increment: step;
+      display: flex; gap: .9rem; align-items: flex-start;
+      padding: .7rem 0;
+      border-bottom: 1px solid rgba(255,255,255,0.06);
+    }
+    .steps li:last-child { border-bottom: none; }
+    .steps li::before {
+      content: counter(step);
+      flex-shrink: 0;
+      width: 26px; height: 26px;
+      background: var(--accent2);
+      border-radius: 50%;
+      font-size: .8rem; font-weight: 700;
+      display: grid; place-items: center;
+    }
+
+    /* ── Coin table ── */
+    .table-wrap { overflow-x: auto; margin-top: .6rem; }
+    table { width: 100%; border-collapse: collapse; font-size: .9rem; }
+    th { background: rgba(255,255,255,0.08); text-align: left; padding: .6rem .9rem; font-weight: 700; }
+    td { padding: .6rem .9rem; border-bottom: 1px solid rgba(255,255,255,0.05); color: var(--muted); }
+    tr:last-child td { border-bottom: none; }
+
+    /* ── Highlight banner ── */
+    .tip {
+      background: rgba(83,52,131,0.3);
+      border-left: 4px solid var(--accent2);
+      border-radius: 0 var(--radius) var(--radius) 0;
+      padding: .9rem 1.1rem;
+      font-size: .9rem;
+      color: var(--muted);
+      margin-top: 1rem;
+    }
+    .tip strong { color: var(--text); }
+
+    .warn-box {
+      background: rgba(233,69,96,0.10);
+      border-left: 4px solid var(--accent);
+      border-radius: 0 var(--radius) var(--radius) 0;
+      padding: .9rem 1.1rem;
+      font-size: .9rem;
+      color: var(--muted);
+      margin-top: 1rem;
+    }
+    .warn-box strong { color: var(--accent); }
+
+    /* ── FAQ ── */
+    details {
+      background: var(--card-bg);
+      border: 1px solid rgba(255,255,255,0.09);
+      border-radius: var(--radius);
+      margin-bottom: .75rem;
+      overflow: hidden;
+    }
+    summary {
+      padding: 1rem 1.1rem;
+      cursor: pointer;
+      font-weight: 600;
+      list-style: none;
+      display: flex; justify-content: space-between; align-items: center;
+    }
+    summary::after { content: "+"; font-size: 1.3rem; color: var(--accent); transition: transform .2s; }
+    details[open] summary::after { transform: rotate(45deg); }
+    details[open] summary { border-bottom: 1px solid rgba(255,255,255,0.07); }
+    .details-body { padding: .9rem 1.1rem; font-size: .9rem; color: var(--muted); }
+    .details-body p + p { margin-top: .5rem; }
+
+    /* ── Footer ── */
+    footer {
+      text-align: center;
+      padding: 2.5rem 1.5rem;
+      font-size: .82rem;
+      color: var(--muted);
+      border-top: 1px solid rgba(255,255,255,0.07);
+    }
+    footer a { color: var(--accent); text-decoration: none; }
+    footer a:hover { text-decoration: underline; }
+  </style>
+</head>
+<body>
+
+<!-- ── Nav ── -->
+<nav>
+  <a class="nav-brand" href="#">🎯 LineUp</a>
+  <div class="nav-links">
+    <a href="#account">Account</a>
+    <a href="#how-to-play">How to Play</a>
+    <a href="#coins">Coins</a>
+    <a href="#faq">FAQ</a>
+    <a href="#privacy">Privacy</a>
+    <a href="#contact">Contact</a>
+  </div>
+</nav>
+
+<!-- ── Hero ── -->
+<div class="hero">
+  <span class="hero-icon">🎯</span>
+  <h1>Welcome to <span>LineUp</span></h1>
+  <p>Trace the hidden path as precisely as you can. Race the clock, earn coins, and rise up the leaderboard — one stroke at a time.</p>
+  <div class="hero-badges">
+    <span class="badge">📱 iOS</span>
+    <span class="badge">🆓 Free to play</span>
+    <span class="badge">☁️ iCloud Leaderboard</span>
+    <span class="badge">🔒 Privacy-first</span>
+  </div>
+</div>
+
+<!-- ── What Is LineUp ── -->
+<section id="what-is-lineup">
+  <h2><span class="emoji">🎮</span> What is LineUp?</h2>
+  <p>LineUp is a precision drawing game for iOS. Each level presents a hidden path — straight lines, sweeping curves, intricate mazes, everyday objects, nature scenes, symbols, or expressive faces — and your job is to trace it as closely and quickly as possible. The better your accuracy and speed, the higher your score and the more coins you earn.</p>
+
+  <div class="cards" style="margin-top:1.4rem;">
+    <div class="card">
+      <div class="card-icon">✏️</div>
+      <h3>Trace the path</h3>
+      <p>Follow the dotted guide with your finger to reveal the hidden drawing.</p>
+    </div>
+    <div class="card">
+      <div class="card-icon">⏱️</div>
+      <h3>Beat the clock</h3>
+      <p>Finish faster for a bigger time bonus on top of your accuracy score.</p>
+    </div>
+    <div class="card">
+      <div class="card-icon">🪙</div>
+      <h3>Earn coins</h3>
+      <p>Copper, Silver, and Gold coins reward steady improvement over time.</p>
+    </div>
+    <div class="card">
+      <div class="card-icon">🏆</div>
+      <h3>Climb the board</h3>
+      <p>Scores sync to a live leaderboard so you can see how you rank globally.</p>
+    </div>
+  </div>
+
+  <div class="tip" style="margin-top:1.4rem;">
+    <strong>Ghost Path:</strong> When you replay a game, your previous attempt appears as a faint guide overlay. Use it to spot where you strayed and beat your own record — tap the <em>Ghost</em> button in the toolbar to toggle it on or off.
+  </div>
+</section>
+
+<!-- ── Account Management ── -->
+<section id="account">
+  <h2><span class="emoji">👤</span> Account &amp; Sign-In</h2>
+  <p style="color:var(--muted);margin-bottom:1rem;">You can start playing immediately as a Guest, or sign in with Apple ID for cross-device leaderboard sync. Here's what each option means and how to manage your account.</p>
+
+  <h3>Choosing how to play</h3>
+  <div class="account-grid">
+    <div class="account-card">
+      <div class="ac-icon">🎭</div>
+      <h3>Guest Play</h3>
+      <p>Pick a name and play instantly — no sign-in required. Your scores and coins are stored locally on your device. If you delete and reinstall the app, local data cannot be recovered.</p>
+    </div>
+    <div class="account-card">
+      <div class="ac-icon"></div>
+      <h3>Sign in with Apple</h3>
+      <p>Link your Apple ID for private, secure authentication. Your leaderboard entry is tied to your Apple ID so your rank follows you across devices. Your email is never shared.</p>
+    </div>
+  </div>
+
+  <div class="tip">
+    <strong>Upgrading from Guest to Apple ID:</strong> If you first played as a Guest and later sign in with Apple, your existing scores are automatically migrated to your Apple ID — nothing is lost.
+  </div>
+
+  <h3>Sign Out</h3>
+  <div class="account-card" style="margin-top:.5rem;">
+    <div class="ac-icon">🔓</div>
+    <h3>What happens when you sign out</h3>
+    <p>Signing out returns you to the Welcome screen. Your Apple ID is unlinked, but <strong style="color:var(--text);">all local scores, coins, and progress remain on the device.</strong> When you sign back in with the same Apple ID, your leaderboard entries are still associated with your account in the cloud.</p>
+  </div>
+
+  <h3>Deactivate Account <span style="font-size:.85rem;font-weight:400;color:var(--muted);">(90-day hold)</span></h3>
+  <div class="account-card warn" style="margin-top:.5rem;">
+    <div class="ac-icon">⏸️</div>
+    <h3>Temporary deactivation — 90-day hold</h3>
+    <p>Deactivating puts your account on hold for up to 90 days. During this period your leaderboard presence is suspended, but <strong style="color:var(--text);">your data is preserved.</strong> You can reactivate at any time within the 90-day window and everything comes back exactly as you left it.</p>
+    <p style="margin-top:.6rem;">If the 90-day window expires without reactivation, the account is <strong style="color:#ffc107;">permanently deleted automatically.</strong></p>
+  </div>
+
+  <h3>Delete Account <span style="font-size:.85rem;font-weight:400;color:var(--muted);">(permanent)</span></h3>
+  <div class="account-card danger" style="margin-top:.5rem;">
+    <div class="ac-icon">🗑️</div>
+    <h3>Permanent deletion — cannot be undone</h3>
+    <p>Choosing <em>Delete Account</em> immediately and permanently removes:</p>
+    <ul style="margin-top:.5rem;padding-left:1.2rem;font-size:.87rem;color:var(--muted);">
+      <li>Your player profile and display name</li>
+      <li>All leaderboard scores in the cloud</li>
+      <li>All local scores, coin balances, and saved paths</li>
+      <li>Your Apple ID link (if applicable)</li>
+    </ul>
+    <p style="margin-top:.6rem;">A new Guest session is created automatically. This action <strong style="color:var(--accent);">cannot be reversed</strong> — there is no grace period.</p>
+  </div>
+
+  <div class="warn-box">
+    <strong>Important:</strong> Account deletion satisfies Apple's App Store requirement for user-initiated data removal. All data — both on-device and in iCloud — is erased immediately upon confirmation.
+  </div>
+</section>
+
+<!-- ── How to Play ── -->
+<section id="how-to-play">
+  <h2><span class="emoji">🕹️</span> How to Play</h2>
+
+  <ol class="steps">
+    <li><div><strong>Choose a Level</strong> — Pick any level type from the home screen. Early games unlock automatically; later ones unlock as you complete prior games.</div></li>
+    <li><div><strong>Study the guide</strong> — A dashed outline shows the path you need to trace. Take a moment to plan your stroke.</div></li>
+    <li><div><strong>Trace it</strong> — Touch and drag to follow the path. Lift your finger at each segment endpoint, then tap to start the next segment.</div></li>
+    <li><div><strong>Score &amp; coins</strong> — Your score is based on accuracy plus a speed bonus. Coins are awarded when you beat your previous best.</div></li>
+    <li><div><strong>Use the Ghost</strong> — On a replay, toggle <em>Ghost</em> in the toolbar to see your last attempt as a faint overlay. Use it to improve segment by segment.</div></li>
+    <li><div><strong>Leaderboard</strong> — Scores sync automatically. Visit the leaderboard to see your rank among all players.</div></li>
+  </ol>
+
+  <div class="tip" style="margin-top:1.2rem;">
+    <strong>Tip:</strong> Accuracy matters more than speed for your first play. Once you nail the path, push your speed on subsequent attempts to maximise the time bonus.
+  </div>
+</section>
+
+<!-- ── Coins ── -->
+<section id="coins">
+  <h2><span class="emoji">🪙</span> Coins &amp; Rewards</h2>
+  <p style="color:var(--muted);">Coins are earned when you beat your previous best coin total for a game. Only <em>improvement</em> pays out — replaying without improving earns nothing, so every coin counts.</p>
+
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr><th>Coin</th><th>How to earn</th><th>What it means</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>🥉 Copper</td><td>Score 1 – 33 per segment</td><td>You traced the path — keep practising!</td></tr>
+        <tr><td>🥈 Silver</td><td>Score 34 – 66 per segment</td><td>Solid accuracy with a decent time.</td></tr>
+        <tr><td>🥇 Gold</td><td>Score 67 – 100 per segment</td><td>Near-perfect trace with great speed.</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="tip" style="margin-top:1rem;">
+    <strong>Delta payouts:</strong> Coins are awarded on the <em>improvement</em> over your previous best. If your old best earned 2 Silver and you now earn 4 Silver, you receive 2 Silver as a payout.
+  </div>
+</section>
+
+<!-- ── FAQ ── -->
+<section id="faq">
+  <h2><span class="emoji">❓</span> Frequently Asked Questions</h2>
+
+  <details>
+    <summary>Why did my scores disappear after reinstalling?</summary>
+    <div class="details-body">
+      <p>Scores and progress are stored locally on your device. A reinstall wipes local storage. To protect your leaderboard position across installs, <strong>sign in with Apple ID</strong> — your cloud scores remain safe even if you reinstall.</p>
+    </div>
+  </details>
+
+  <details>
+    <summary>Can I play on multiple devices with the same account?</summary>
+    <div class="details-body">
+      <p>Yes — sign in with the same Apple ID on each device. Your leaderboard scores sync through iCloud. Local progress (coins, path history) is device-specific and does not sync between devices.</p>
+    </div>
+  </details>
+
+  <details>
+    <summary>Why aren't my coins increasing even though I played?</summary>
+    <div class="details-body">
+      <p>Coins are only awarded when you <strong>beat your previous best</strong> coin total for that game. If your new score earns the same or fewer coins than your record, no payout occurs. Try improving your accuracy or speed.</p>
+    </div>
+  </details>
+
+  <details>
+    <summary>How do I unlock the next game in a level?</summary>
+    <div class="details-body">
+      <p>Complete the previous game in the level to unlock the next one. A game is considered complete once you reach the score screen after tracing all segments.</p>
+    </div>
+  </details>
+
+  <details>
+    <summary>What is the Ghost path?</summary>
+    <div class="details-body">
+      <p>The Ghost is a faint, dashed overlay of your most recent attempt at a game. It appears automatically when you replay. Each segment of the ghost is tinted to reflect how well you scored on it previously — so you can immediately see which segments need work. Tap the <strong>Ghost</strong> button in the top toolbar to toggle it on or off.</p>
+    </div>
+  </details>
+
+  <details>
+    <summary>What does Deactivate Account do vs Delete Account?</summary>
+    <div class="details-body">
+      <p><strong>Deactivate</strong> puts your account on a 90-day hold — all your data is preserved and you can reactivate any time within that window. Your leaderboard entry is hidden while deactivated.</p>
+      <p><strong>Delete</strong> is immediate and permanent. All data — local and cloud — is erased and cannot be recovered. A new Guest session is started automatically.</p>
+    </div>
+  </details>
+
+  <details>
+    <summary>I forgot to sign in with Apple before reinstalling — are my scores gone?</summary>
+    <div class="details-body">
+      <p>Your local scores are gone after a reinstall if you were a Guest. However, if you previously uploaded scores to the leaderboard as a Guest, those cloud entries persist. Signing in with Apple ID on the new install will give you a fresh local device but your cloud rank remains visible.</p>
+    </div>
+  </details>
+
+  <details>
+    <summary>How is my score calculated?</summary>
+    <div class="details-body">
+      <p>Each segment is scored on accuracy (how closely you traced the path) plus a time bonus for completing it quickly. Scores range from 1–100 per segment. Your game total is the sum of all segment scores.</p>
+    </div>
+  </details>
+</section>
+
+<!-- ── Privacy ── -->
+<section id="privacy">
+  <h2><span class="emoji">🔒</span> Privacy &amp; Data</h2>
+  <p style="color:var(--muted);margin-bottom:1rem;">LineUp is designed to collect only what is absolutely necessary to run the leaderboard and nothing more.</p>
+
+  <div class="cards">
+    <div class="card">
+      <div class="card-icon">📋</div>
+      <h3>What we collect</h3>
+      <p>Display name, optional Apple ID (hashed), and game scores — only when you choose to participate in the leaderboard.</p>
+    </div>
+    <div class="card">
+      <div class="card-icon">🚫</div>
+      <h3>What we never collect</h3>
+      <p>No location data, no advertising IDs, no contacts, no camera access, no behavioural tracking.</p>
+    </div>
+    <div class="card">
+      <div class="card-icon">☁️</div>
+      <h3>Where data is stored</h3>
+      <p>Leaderboard data is stored in Apple CloudKit (your iCloud). We have no separate backend servers.</p>
+    </div>
+    <div class="card">
+      <div class="card-icon">🗑️</div>
+      <h3>Your right to delete</h3>
+      <p>Use <em>Delete Account</em> inside the app to permanently remove all your data from every device and iCloud instantly.</p>
+    </div>
+  </div>
+
+  <h3>Data Deletion</h3>
+  <p style="color:var(--muted);">To delete all your data, open LineUp → Settings → Account → Delete Account. This is immediate and permanent. Alternatively, email us at <a href="mailto:photerrificshots@gmail.com" style="color:var(--accent);">photerrificshots@gmail.com</a> and we will process your request within 30 days.</p>
+</section>
+
+<!-- ── Contact ── -->
+<section id="contact">
+  <h2><span class="emoji">✉️</span> Contact &amp; Support</h2>
+  <p style="color:var(--muted);margin-bottom:1.2rem;">Having trouble, found a bug, or just want to say hello? We'd love to hear from you.</p>
+
+  <div class="cards">
+    <div class="card">
+      <div class="card-icon">📧</div>
+      <h3>Email Support</h3>
+      <p><a href="mailto:photerrificshots@gmail.com" style="color:var(--accent);">photerrificshots@gmail.com</a><br/><span style="font-size:.8rem;">Responses within 1–2 business days.</span></p>
+    </div>
+    <div class="card">
+      <div class="card-icon">🐛</div>
+      <h3>Bug Reports</h3>
+      <p>Include your iOS version, device model, and a description of what happened. Screenshots are always helpful!</p>
+    </div>
+    <div class="card">
+      <div class="card-icon">⭐</div>
+      <h3>Leave a Review</h3>
+      <p>Enjoying LineUp? An App Store review helps other players discover the game — thank you!</p>
+    </div>
+  </div>
+</section>
+
+<!-- ── Footer ── -->
+<footer>
+  <p>© 2025 LineUp · All rights reserved</p>
+  <p style="margin-top:.4rem;">
+    <a href="#privacy">Privacy Policy</a> ·
+    <a href="mailto:photerrificshots@gmail.com">photerrificshots@gmail.com</a>
+  </p>
+  <p style="margin-top:.4rem; font-size:.78rem; opacity:.6;">Made with ❤️ for iOS</p>
+</footer>
+
+</body>
+</html>
