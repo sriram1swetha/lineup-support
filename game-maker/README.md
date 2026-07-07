@@ -22,12 +22,18 @@ Or just open `index.html` directly in a browser.
 When deployed under the GitHub Pages site it lives at
 `…/lineup-support/game-maker/` and does **not** touch the existing support page.
 
-## Pipeline (vanilla JS)
-greyscale → binarize (Otsu, alpha-aware) → edges (morphological gradient) →
-**Zhang–Suen thinning** (1px skeleton) → **skeleton graph trace** (strokes between
-junctions/endpoints) → **RDP** simplify → per-segment **line vs cubic-Bézier** fit
-(through the sub-path midpoint, mirroring the app's `controlPoints(from:to:through:)`)
-→ **junction-snap** (coincident endpoints → shared dot) → **unit-space** export.
+## Pipeline (v2 — contour-first, OpenCV.js)
+grayscale → **GaussianBlur** (denoise) → **Otsu threshold** → morphological open
+(despeckle) → **findContours** → **drop tiny contours by area/length** (this is what
+kills photo/texture noise) → **approxPolyDP / RDP** simplify → per-edge **line vs
+cubic-Bézier** fit (through the sub-arc midpoint, mirroring the app's
+`controlPoints(from:to:through:)`) → dedup dots → **unit-space** export, auto-simplified
+to stay under the 51-dot cap.
+
+OpenCV.js loads from a CDN (needs network on first load; cached after). The v1
+skeleton/edge approach over-traced texture on real photos — contours + area filtering
+fixes that. **Real photos** still want a subject-isolation (SAM) pre-step — that's the
+next iteration; start with clean/flat art.
 
 ### Coordinate contract (must match the app)
 ```
