@@ -75,17 +75,41 @@
 </div>
 
 <script>
-  // OpenCV.js ready handling (covers Emscripten-module and Promise builds).
+  // Robust OpenCV.js loader: tries multiple CDNs and POLLS for readiness so it
+  // works across builds (onRuntimeInitialized / Promise / already-ready).
   window.__cvReady = false;
-  function onCvLoad() {
-    if (typeof cv === 'undefined') return;
-    const done = () => { window.__cvReady = true; const s = document.getElementById('cvStatus'); s.textContent = 'OpenCV ready.'; s.className = 'ok'; document.getElementById('detect').disabled = false; };
-    if (cv instanceof Promise) cv.then((c) => { window.cv = c; done(); });
-    else if (cv.Mat) done();
-    else cv.onRuntimeInitialized = done;
-  }
+  (function () {
+    const status = () => document.getElementById('cvStatus');
+    function done() {
+      window.__cvReady = true;
+      const s = status(); if (s) { s.textContent = 'OpenCV ready.'; s.className = 'ok'; }
+      const b = document.getElementById('detect'); if (b) b.disabled = false;
+    }
+    let polls = 0;
+    function poll() {
+      if (window.cv) {
+        if (typeof cv.then === 'function' && !cv.Mat) { cv.then((c) => { window.cv = c; }); }
+        if (cv.Mat) { done(); return; }
+      }
+      if (polls++ < 300) setTimeout(poll, 200);           // ~60s budget
+      else { const s = status(); if (s) s.textContent = '⚠ OpenCV didn’t initialise — reload / check network.'; }
+    }
+    const CDNS = [
+      'https://docs.opencv.org/4.x/opencv.js',
+      'https://docs.opencv.org/4.8.0/opencv.js',
+    ];
+    function load(i) {
+      if (i >= CDNS.length) { const s = status(); if (s) s.textContent = '⚠ OpenCV failed to load from all CDNs.'; return; }
+      const sc = document.createElement('script');
+      sc.async = true; sc.src = CDNS[i];
+      sc.onerror = () => load(i + 1);
+      document.head.appendChild(sc);
+    }
+    function boot() { const s = status(); if (s) s.textContent = 'Loading OpenCV… (first load can take ~10s)'; load(0); poll(); }
+    if (document.readyState !== 'loading') boot();
+    else document.addEventListener('DOMContentLoaded', boot);
+  })();
 </script>
-<script async src="https://docs.opencv.org/4.10.0/opencv.js" onload="onCvLoad()" onerror="document.getElementById('cvStatus').textContent='⚠ OpenCV failed to load (check network).'"></script>
 <script src="detector.js"></script>
 <script src="render.js"></script>
 <script src="samples.js"></script>
