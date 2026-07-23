@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>ConnectDaDots · Game Maker (prototype)</title>
+<style>
+  :root { --bg:#0f1320; --card:#191e2e; --ink:#e8ecf5; --mut:#9aa3b8; --accent:#e94560; --line:#2a3145; }
+  * { box-sizing: border-box; }
+  body { margin:0; font:15px/1.5 -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif; background:var(--bg); color:var(--ink); }
+  header { padding:16px 20px; border-bottom:1px solid var(--line); }
+  header h1 { margin:0; font-size:18px; }
+  header p { margin:4px 0 0; color:var(--mut); font-size:13px; }
+  .wrap { display:grid; grid-template-columns: 320px 1fr; gap:16px; padding:16px 20px; align-items:start; }
+  .card { background:var(--card); border:1px solid var(--line); border-radius:12px; padding:14px; }
+  .card h2 { margin:0 0 10px; font-size:13px; text-transform:uppercase; letter-spacing:.04em; color:var(--mut); }
+  label { display:block; margin:10px 0 4px; font-size:13px; color:var(--mut); }
+  input[type=text], select { width:100%; padding:8px; background:#10141f; color:var(--ink); border:1px solid var(--line); border-radius:8px; }
+  input[type=range] { width:100%; }
+  button { width:100%; padding:11px; margin-top:12px; border:0; border-radius:10px; background:var(--accent); color:#fff; font-weight:600; cursor:pointer; }
+  button:disabled { opacity:.5; cursor:not-allowed; }
+  button.secondary { background:#2a3145; }
+  canvas { background:#0b0e16; border:1px solid var(--line); border-radius:10px; max-width:100%; }
+  .stats { color:var(--mut); font-size:13px; margin-top:8px; }
+  textarea { width:100%; height:220px; margin-top:10px; background:#10141f; color:#cfe3ff; border:1px solid var(--line); border-radius:8px; padding:10px; font:12px/1.45 ui-monospace,SFMono-Regular,Menlo,monospace; }
+  .checks { display:flex; gap:14px; flex-wrap:wrap; margin-top:8px; color:var(--mut); font-size:13px; }
+  .checks label { display:inline-flex; align-items:center; gap:6px; margin:0; }
+  .pill { display:inline-block; padding:2px 8px; border-radius:999px; background:#2a3145; color:var(--mut); font-size:11px; }
+  #cvStatus { font-size:12px; color:#f0a05a; }
+  #cvStatus.ok { color:#5ac47a; }
+  .flag { color:#f0a05a; }
+</style>
+</head>
+<body>
+<header>
+  <h1>ConnectDaDots · Game Maker <span class="pill">prototype v2</span></h1>
+  <p>Upload a clean icon / flat art image → auto-detect dots &amp; segments (contour-based, denoised) → export the app's template JSON. <span id="cvStatus">Loading OpenCV…</span></p>
+</header>
+
+<div class="wrap">
+  <div class="card">
+    <h2>Source</h2>
+    <input type="file" id="file" accept="image/*" />
+    <label>Or load a known game (tests the renderer)</label>
+    <select id="sample"><option value="">— none —</option></select>
+
+    <h2 style="margin-top:18px">Detection</h2>
+    <label>Denoise (blur) ▸ <span id="blurV">3</span></label>
+    <input type="range" id="blur" min="1" max="9" step="2" value="3" />
+    <label>Min feature size — drops noise ▸ <span id="areaV">0.30</span>%</label>
+    <input type="range" id="area" min="0" max="3" step="0.05" value="0.30" />
+    <label>Simplify — fewer dots ▸ <span id="epsV">1.2</span>%</label>
+    <input type="range" id="eps" min="0.2" max="5" step="0.1" value="1.2" />
+    <label>Straightness — line vs curve ▸ <span id="lineV">2.0</span>px</label>
+    <input type="range" id="line" min="0.5" max="8" step="0.5" value="2.0" />
+    <div class="checks">
+      <label><input type="checkbox" id="dbgBin" /> threshold mask</label>
+      <label><input type="checkbox" id="showNums" checked /> dot #</label>
+    </div>
+
+    <h2 style="margin-top:18px">Metadata</h2>
+    <label>Name</label><input type="text" id="name" value="Untitled" />
+    <label>Game mode</label>
+    <select id="mode"><option value="easy">easy</option><option value="surprise">surprise</option></select>
+
+    <button id="detect" disabled>Detect dots &amp; segments</button>
+    <button id="download" class="secondary">Download JSON</button>
+  </div>
+
+  <div class="card">
+    <h2>Preview <span id="stats" class="stats"></span></h2>
+    <canvas id="cv" width="480" height="480"></canvas>
+    <textarea id="json" spellcheck="false" placeholder="Template JSON appears here…"></textarea>
+  </div>
+</div>
+
+<script>
+  // Robust OpenCV.js loader: tries multiple CDNs and POLLS for readiness so it
+  // works across builds (onRuntimeInitialized / Promise / already-ready).
+  window.__cvReady = false;
+  (function () {
+    const status = () => document.getElementById('cvStatus');
+    function done() {
+      window.__cvReady = true;
+      const s = status(); if (s) { s.textContent = 'OpenCV ready.'; s.className = 'ok'; }
+      const b = document.getElementById('detect'); if (b) b.disabled = false;
+    }
+    let polls = 0;
+    function poll() {
+      if (window.cv) {
+        if (typeof cv.then === 'function' && !cv.Mat) { cv.then((c) => { window.cv = c; }); }
+        if (cv.Mat) { done(); return; }
+      }
+      if (polls++ < 300) setTimeout(poll, 200);           // ~60s budget
+      else { const s = status(); if (s) s.textContent = '⚠ OpenCV didn’t initialise — reload / check network.'; }
+    }
+    const CDNS = [
+      'https://docs.opencv.org/4.x/opencv.js',
+      'https://docs.opencv.org/4.8.0/opencv.js',
+    ];
+    function load(i) {
+      if (i >= CDNS.length) { const s = status(); if (s) s.textContent = '⚠ OpenCV failed to load from all CDNs.'; return; }
+      const sc = document.createElement('script');
+      sc.async = true; sc.src = CDNS[i];
+      sc.onerror = () => load(i + 1);
+      document.head.appendChild(sc);
+    }
+    function boot() { const s = status(); if (s) s.textContent = 'Loading OpenCV… (first load can take ~10s)'; load(0); poll(); }
+    if (document.readyState !== 'loading') boot();
+    else document.addEventListener('DOMContentLoaded', boot);
+  })();
+</script>
+<script src="detector.js"></script>
+<script src="render.js"></script>
+<script src="samples.js"></script>
+<script>
+(function () {
+  const $ = (id) => document.getElementById(id);
+  const cvEl = $('cv'), ctx = cvEl.getContext('2d');
+  let imgData = null, imgEl = null, lastResult = null;
+
+  Object.keys(window.SAMPLES || {}).forEach(k => { const o = document.createElement('option'); o.value = k; o.textContent = k; $('sample').appendChild(o); });
+
+  const sync = () => {
+    $('blurV').textContent = $('blur').value;
+    $('areaV').textContent = Number($('area').value).toFixed(2);
+    $('epsV').textContent = $('eps').value;
+    $('lineV').textContent = $('line').value;
+  };
+  ['blur','area','eps','line'].forEach(id => $(id).addEventListener('input', () => { sync(); if (imgData && window.__cvReady) run(); }));
+  ['dbgBin','showNums'].forEach(id => $(id).addEventListener('change', () => { if (imgData && window.__cvReady) run(); else if ($('sample').value) drawSample(); }));
+  sync();
+
+  $('file').addEventListener('change', (e) => {
+    const f = e.target.files[0]; if (!f) return;
+    $('sample').value = '';
+    const url = URL.createObjectURL(f);
+    const im = new Image();
+    im.onload = () => {
+      const max = 480, sc = Math.min(1, max / Math.max(im.width, im.height));
+      const W = Math.max(2, Math.round(im.width * sc)), H = Math.max(2, Math.round(im.height * sc));
+      cvEl.width = W; cvEl.height = H; ctx.clearRect(0,0,W,H); ctx.drawImage(im, 0, 0, W, H);
+      imgData = ctx.getImageData(0, 0, W, H); imgEl = im; URL.revokeObjectURL(url);
+      if (window.__cvReady) run(); else { $('stats').textContent = '(waiting for OpenCV…)'; }
+    };
+    im.src = url;
+  });
+
+  $('sample').addEventListener('change', () => { if ($('sample').value) { imgData = null; drawSample(); } });
+  function drawSample() {
+    const tpl = window.SAMPLES[$('sample').value]; if (!tpl) return;
+    cvEl.width = 480; cvEl.height = 480; ctx.clearRect(0,0,480,480);
+    window.Renderer.render(ctx, tpl, 480, 480, { numbers: $('showNums').checked });
+    $('json').value = JSON.stringify(tpl, null, 2); lastResult = { template: tpl };
+    $('stats').textContent = `sample · ${tpl.unitDots.length} dots · ${tpl.bezierSegments.length} segments`;
+  }
+
+  function run() {
+    if (!imgData || !window.__cvReady) return;
+    const W = imgData.width, H = imgData.height;
+    let res;
+    try {
+      res = window.Detector.detect(imgData, {
+        blur: +$('blur').value, minAreaFrac: +$('area').value / 100, approxEps: +$('eps').value / 100,
+        lineTol: +$('line').value, name: $('name').value, gameMode: $('mode').value,
+      });
+    } catch (err) { $('stats').textContent = 'error: ' + err.message; console.error(err); return; }
+    lastResult = res;
+    ctx.clearRect(0,0,W,H);
+    if (imgEl) { ctx.globalAlpha = 0.35; ctx.drawImage(imgEl, 0, 0, W, H); ctx.globalAlpha = 1; }
+    if ($('dbgBin').checked && res.debug.binary) { const oc = octx(W,H); window.Renderer.renderMask(oc, res.debug.binary, W, H, [70,80,110]); ctx.drawImage(oc.canvas, 0, 0); }
+    window.Renderer.render(ctx, res.template, W, H, { numbers: $('showNums').checked, dotRadius: 5, lineWidth: 2 });
+    $('json').value = JSON.stringify(res.template, null, 2);
+    const s = res.stats;
+    $('stats').innerHTML = `${s.dots} dots · ${s.segments} segments · ${s.paths} paths` + (s.flagged ? ` <span class="flag">· ⚠ over ${s.cappedAt}-dot cap</span>` : '');
+  }
+  let _oc = null;
+  function octx(W,H){ if(!_oc) _oc = document.createElement('canvas'); _oc.width=W; _oc.height=H; return _oc.getContext('2d'); }
+
+  $('detect').addEventListener('click', run);
+  $('download').addEventListener('click', () => {
+    if (!lastResult) return;
+    const blob = new Blob([JSON.stringify(lastResult.template, null, 2)], { type: 'application/json' });
+    const a = document.createElement('a'); a.href = URL.createObjectURL(blob);
+    a.download = (lastResult.template.name || 'game').replace(/\s+/g,'_') + '.json'; a.click(); URL.revokeObjectURL(a.href);
+  });
+})();
+</script>
+</body>
+</html>
